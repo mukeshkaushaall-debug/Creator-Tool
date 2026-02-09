@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Image Compressor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{box-sizing:border-box;font-family:Arial,Helvetica,sans-serif;}
+
+body{
+  margin:0;
+  background:#f1f3f5;
+}
+
+/* HEADER */
+.header{
+  background:#c81e2b;
+  padding:14px;
+  text-align:center;
+}
+.header h1{
+  color:#fff;
+  margin:0;
+  font-size:22px;
+}
+
+/* CONTENT */
+.container{
+  max-width:420px;
+  margin:30px auto;
+  padding:0 14px;
+  text-align:center;
+}
+.container h2{
+  margin-bottom:8px;
+}
+.container p{
+  font-size:14px;
+  color:#555;
+}
+
+/* CARD */
+.card{
+  background:#fff;
+  padding:16px;
+  border-radius:10px;
+  box-shadow:0 6px 20px rgba(0,0,0,.08);
+}
+
+/* PREVIEW */
+.preview{
+  display:none;
+  margin-bottom:12px;
+}
+.preview img{
+  max-width:100%;
+  max-height:200px;
+  border-radius:8px;
+}
+
+/* INPUT */
+input[type=file]{
+  width:100%;
+  padding:12px;
+  border:1px solid #ccc;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+/* RANGE */
+.range-box{
+  margin-top:12px;
+  text-align:left;
+}
+.range-box label{
+  font-size:14px;
+}
+input[type=range]{
+  width:100%;
+}
+
+/* BUTTON */
+.btn{
+  width:100%;
+  margin-top:14px;
+  padding:12px;
+  background:#c81e2b;
+  border:none;
+  color:#fff;
+  font-size:15px;
+  font-weight:600;
+  border-radius:6px;
+  cursor:pointer;
+}
+.btn:disabled{opacity:.6}
+
+/* STATUS */
+.status{
+  display:none;
+  margin-top:10px;
+  font-size:14px;
+}
+
+/* RESULT */
+.result{
+  display:none;
+  margin-top:14px;
+}
+.result img{
+  max-width:100%;
+  border-radius:8px;
+}
+.download{
+  display:inline-block;
+  margin-top:8px;
+  color:#c81e2b;
+  font-weight:600;
+  text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>YourToolName</h1>
+</div>
+
+<div class="container">
+  <h2>Image Compressor</h2>
+  <p>Reduce image size without losing quality</p>
+
+  <div class="card">
+
+    <div class="preview" id="previewBox">
+      <img id="imgPreview">
+    </div>
+
+    <input type="file" id="imageInput" accept="image/*">
+
+    <div class="range-box">
+      <label>Compression Quality: <b id="qVal">60%</b></label>
+      <input type="range" id="quality" min="20" max="90" value="60">
+    </div>
+
+    <button class="btn" id="compressBtn" disabled>Compress Image</button>
+
+    <div class="status" id="status">Compressing image...</div>
+
+    <div class="result" id="resultBox">
+      <img id="outputImg"><br>
+      <a id="downloadLink" class="download" download>Download Image</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const imageInput=document.getElementById("imageInput");
+const imgPreview=document.getElementById("imgPreview");
+const previewBox=document.getElementById("previewBox");
+const compressBtn=document.getElementById("compressBtn");
+const quality=document.getElementById("quality");
+const qVal=document.getElementById("qVal");
+const status=document.getElementById("status");
+const resultBox=document.getElementById("resultBox");
+const outputImg=document.getElementById("outputImg");
+const downloadLink=document.getElementById("downloadLink");
+
+let file;
+
+quality.oninput=()=>qVal.innerText=quality.value+"%";
+
+imageInput.onchange=()=>{
+  file=imageInput.files[0];
+  if(!file) return;
+  imgPreview.src=URL.createObjectURL(file);
+  previewBox.style.display="block";
+  compressBtn.disabled=false;
+};
+
+compressBtn.onclick=async()=>{
+  status.style.display="block";
+  resultBox.style.display="none";
+  compressBtn.disabled=true;
+
+  const fd=new FormData();
+  fd.append("image",file);
+  fd.append("quality",quality.value);
+
+  const res=await fetch("/compress-image",{method:"POST",body:fd});
+  const blob=await res.blob();
+
+  status.style.display="none";
+  compressBtn.disabled=false;
+
+  const url=URL.createObjectURL(blob);
+  outputImg.src=url;
+  downloadLink.href=url;
+  downloadLink.download="compressed-image.jpg";
+  resultBox.style.display="block";
+};
+</script>
+
+</body>
+</html>

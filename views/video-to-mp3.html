@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Video to MP3 Downloader</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+*{
+  box-sizing:border-box;
+  font-family:Arial,Helvetica,sans-serif;
+}
+
+body{
+  margin:0;
+  background:#f1f3f5;
+  color:#111;
+}
+
+/* ===== HEADER ===== */
+.header{
+  background:#dd0707;
+  padding:14px;
+  text-align:center;
+}
+
+.header h1{
+  color:#fff;
+  font-size:22px;
+  margin:0;
+  font-weight:700;
+}
+
+/* ===== CONTENT ===== */
+.container{
+  max-width:420px;
+  margin:30px auto;
+  padding:0 14px;
+  text-align:center;
+}
+
+.container h2{
+  font-size:22px;
+  margin-bottom:8px;
+}
+
+.container p{
+  color:#555;
+  font-size:14px;
+  margin-bottom:18px;
+}
+
+/* ===== CARD ===== */
+.card{
+  background:#fff;
+  border-radius:10px;
+  padding:16px;
+  box-shadow:0 6px 20px rgba(0,0,0,.08);
+}
+
+/* ===== PREVIEW ===== */
+.preview{
+  display:none;
+  margin-bottom:12px;
+}
+
+.preview video{
+  width:100%;
+  border-radius:8px;
+}
+
+/* ===== INPUT ===== */
+.file-input{
+  display:block;
+  width:100%;
+  padding:12px;
+  border:1px solid #ccc;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+/* ===== BUTTON ===== */
+.btn{
+  width:100%;
+  margin-top:12px;
+  padding:12px;
+  background:#c81e2b;
+  border:none;
+  color:#fff;
+  font-size:15px;
+  font-weight:600;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.btn:disabled{
+  opacity:.6;
+}
+
+/* ===== STATUS ===== */
+.status{
+  display:none;
+  margin-top:10px;
+  font-size:14px;
+  color:#555;
+}
+
+/* ===== RESULT ===== */
+.result{
+  display:none;
+  margin-top:14px;
+}
+
+.result audio{
+  width:100%;
+  margin-top:8px;
+}
+
+.download{
+  display:inline-block;
+  margin-top:8px;
+  color:#c81e2b;
+  font-weight:600;
+  text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h1>CretorTools</h1>
+</div>
+
+<div class="container">
+  <h2>Video to MP3 Downloader</h2>
+  <p>Convert videos to MP3 audio online for free</p>
+
+  <div class="card">
+
+    <div class="preview" id="previewBox">
+      <video id="videoPreview" controls></video>
+    </div>
+
+    <input type="file" id="videoInput" class="file-input" accept="video/*">
+
+    <button class="btn" id="convertBtn" disabled>Convert to MP3</button>
+
+    <div class="status" id="status">Converting, please wait...</div>
+
+    <div class="result" id="resultBox">
+      <audio id="audioPlayer" controls></audio><br>
+      <a id="downloadLink" class="download" download>Download MP3</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const videoInput=document.getElementById("videoInput");
+const videoPreview=document.getElementById("videoPreview");
+const previewBox=document.getElementById("previewBox");
+const convertBtn=document.getElementById("convertBtn");
+const status=document.getElementById("status");
+const resultBox=document.getElementById("resultBox");
+const audioPlayer=document.getElementById("audioPlayer");
+const downloadLink=document.getElementById("downloadLink");
+
+let file;
+
+videoInput.onchange=()=>{
+  file=videoInput.files[0];
+  if(!file) return;
+  videoPreview.src=URL.createObjectURL(file);
+  previewBox.style.display="block";
+  convertBtn.disabled=false;
+};
+
+convertBtn.onclick=async()=>{
+  status.style.display="block";
+  resultBox.style.display="none";
+  convertBtn.disabled=true;
+
+  const fd=new FormData();
+  fd.append("video",file);
+
+  const res=await fetch("/video-to-mp3",{method:"POST",body:fd});
+  const data=await res.json();
+
+  status.style.display="none";
+  convertBtn.disabled=false;
+
+  if(data.success){
+    audioPlayer.src=data.file;
+    downloadLink.href=data.file;
+    resultBox.style.display="block";
+  }else{
+    alert("Conversion failed");
+  }
+};
+</script>
+
+</body>
+</html>
